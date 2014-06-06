@@ -1,0 +1,17 @@
+{
+  "name": "Comanche Sample",
+  "package": "com.defrac.sample",
+  "identifier": "comanche",
+  "main": "com.defrac.sample.comanche.ComancheApp",
+  "version": "1.0",
+  "targets": [
+    "android",
+    "web",
+    "jvm",
+    "ios"
+  ],
+  "web": {
+    "debug": "false",
+    "strictMode": "false"
+  }
+}
