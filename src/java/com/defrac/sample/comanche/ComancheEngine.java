@@ -139,6 +139,12 @@ final class ComancheEngine {
     angleSin = Math.sin(angle);
   }
 
+  void rotation(double value) {
+    angle = value;
+    angleCos = Math.cos(angle);
+    angleSin = Math.sin(angle);
+  }
+
   void rotateUpwards() {
     vp -= 2;
   }
@@ -163,5 +169,17 @@ final class ComancheEngine {
 
   void moveDownwards() {
     hp -= 2;
+  }
+
+  double currentHeight() {
+    int mapOffset =
+        (((int)Math.floor(yp) & 1023) << 10) + ((int)Math.floor(xp) & 1023);
+
+    double h = heightMap[mapOffset];
+
+    h = (256 - h);
+    h = h - 128;
+
+    return h;
   }
 }

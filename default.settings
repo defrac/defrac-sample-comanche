@@ -12,6 +12,9 @@
   ],
   "web": {
     "debug": "false",
-    "strictMode": "false"
+    "strictMode": "false",
+    "optimizer": {
+      "enabled": "true"
+    }
   }
 }

@@ -24,6 +24,10 @@ public final class ComancheApp extends GenericApp {
   static final int HEIGHT = 256;
   static final int DEPTH = 400;
 
+  static final boolean AUTOPILOT = true;
+  static final double AUTOPILOT_PHASE_INC = 110.0 / 44100.0;
+  static double AUTOPILOT_PHASE = 0.0;
+
   static final int STATE_MOVE_FWD =   1;
   static final int STATE_MOVE_BCK =   2;
   static final int STATE_MOVE_UPW =   4;
@@ -126,21 +130,41 @@ public final class ComancheApp extends GenericApp {
   }
 
   private void onEnterFrame() {
-    // only render if something is actually happening
-    if(state != 0) {
-      if((state & STATE_MOVE_FWD) != 0) { engine.moveForwards();    }
-      if((state & STATE_MOVE_BCK) != 0) { engine.moveBackwards();   }
-      if((state & STATE_MOVE_UPW) != 0) { engine.moveUpwards();     }
-      if((state & STATE_MOVE_DWN) != 0) { engine.moveDownwards();   }
-      if((state & STATE_ROTA_LFT) != 0) { engine.rotateLeft();      }
-      if((state & STATE_ROTA_RGT) != 0) { engine.rotateRight();     }
-      if((state & STATE_ROTA_UPW) != 0) { engine.rotateUpwards();   }
-      if((state & STATE_ROTA_DWN) != 0) { engine.rotateDownwards(); }
+    if(AUTOPILOT) {
+      engine.moveForwards();
+
+      AUTOPILOT_PHASE += AUTOPILOT_PHASE_INC;
+      if(AUTOPILOT_PHASE > 1.0) {
+        --AUTOPILOT_PHASE;
+      }
+
+      double mapHeight = engine.currentHeight();
+
+      engine.hp += ((-mapHeight + 100) - engine.hp) * 0.06125;
+      engine.vp = -10 - (int)Math.round(Math.cos(AUTOPILOT_PHASE * Math.PI * 2.0) * 10);
+      engine.rotation(Math.sin(AUTOPILOT_PHASE * Math.PI * 2.0) * Math.PI * 0.25);
       engine.render();
+    } else {
+      // only render if something is actually happening
+      if (state != 0) {
+        if ((state & STATE_MOVE_FWD) != 0) engine.moveForwards();
+        if ((state & STATE_MOVE_BCK) != 0) engine.moveBackwards();
+        if ((state & STATE_MOVE_UPW) != 0) engine.moveUpwards();
+        if ((state & STATE_MOVE_DWN) != 0) engine.moveDownwards();
+        if ((state & STATE_ROTA_LFT) != 0) engine.rotateLeft();
+        if ((state & STATE_ROTA_RGT) != 0) engine.rotateRight();
+        if ((state & STATE_ROTA_UPW) != 0) engine.rotateUpwards();
+        if ((state & STATE_ROTA_DWN) != 0) engine.rotateDownwards();
+        engine.render();
+      }
     }
   }
 
   private void onKeyDown(final int keyCode) {
+    if(AUTOPILOT) {
+      return;
+    }
+
     int bit = 0;
     switch(keyCode) {
       case 87: bit = STATE_MOVE_FWD; break; // w
@@ -156,6 +180,10 @@ public final class ComancheApp extends GenericApp {
   }
 
   private void onKeyUp(final int keyCode) {
+    if(AUTOPILOT) {
+      return;
+    }
+
     int bit = 0;
     switch(keyCode) {
       case 87: bit = STATE_MOVE_FWD; break; // w
@@ -171,10 +199,18 @@ public final class ComancheApp extends GenericApp {
   }
 
   private void onPointerDown(final Point point) {
+    if(AUTOPILOT) {
+      return;
+    }
+
     state |= STATE_MOVE_FWD;
   }
 
   private void onPointerMove(final Point point) {
+    if(AUTOPILOT) {
+      return;
+    }
+
     if((state & STATE_MOVE_FWD) == 0) {
       return;
     }
@@ -196,6 +232,10 @@ public final class ComancheApp extends GenericApp {
   }
 
   private void onPointerUp(final Point point) {
+    if(AUTOPILOT) {
+      return;
+    }
+
     state &= ~STATE_MOVE_FWD;
   }
 }
