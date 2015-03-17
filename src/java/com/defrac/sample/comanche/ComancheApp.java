@@ -126,7 +126,9 @@ public final class ComancheApp extends GenericApp {
 
   @Override
   protected void onResize(float width, float height) {
-    getChildAt(0).scaleToSize(width, height);
+    if(numChildren() > 0) {
+      getChildAt(0).scaleToSize(width, height);
+    }
   }
 
   private void onEnterFrame() {
