@@ -1,7 +1,6 @@
 {
   "name": "Comanche Sample",
-  "package": "com.defrac.sample",
-  "identifier": "comanche",
+  "package": "com.defrac.sample.comanche",
   "main": "com.defrac.sample.comanche.ComancheApp",
   "version": "1.0",
   "targets": [
@@ -15,6 +14,8 @@
     "strictMode": "false",
     "optimizer": {
       "enabled": "true"
-    }
-  }
+    },
+    "optimize": "4"
+  },
+  "optimize": "1"
 }
