@@ -1,21 +1,21 @@
 {
   "name": "Comanche Sample",
   "package": "com.defrac.sample.comanche",
-  "main": "com.defrac.sample.comanche.ComancheApp",
   "version": "1.0",
+
+  "main": "com.defrac.sample.comanche.Main",
+
   "targets": [
     "android",
     "web",
     "jvm",
     "ios"
   ],
+
+  "optimize": true,
+
   "web": {
-    "debug": "false",
-    "strictMode": "false",
-    "optimizer": {
-      "enabled": "true"
-    },
-    "optimize": "4"
-  },
-  "optimize": "1"
+    "debug": false,
+    "strictMode": false
+  }
 }

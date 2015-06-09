@@ -4,22 +4,17 @@
 
 package com.defrac.sample.comanche;
 
-import defrac.app.Bootstrap;
-import defrac.app.GenericApp;
 import defrac.display.*;
-import defrac.event.*;
 import defrac.geom.Point;
 import defrac.resource.BinaryResource;
 import defrac.resource.ResourceGroup;
+import defrac.ui.DisplayList;
+import defrac.ui.Screen;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public final class ComancheApp extends GenericApp {
-  public static void main(final String[] args) {
-    Bootstrap.run(new ComancheApp());
-  }
-
+public final class ComancheScreen extends Screen {
   static final int WIDTH = 512;
   static final int HEIGHT = 256;
   static final int DEPTH = 400;
@@ -40,8 +35,14 @@ public final class ComancheApp extends GenericApp {
   int state = 0;
   ComancheEngine engine;
 
+  DisplayList displayList;
+
   @Override
   protected void onCreate() {
+    super.onCreate();
+
+    displayList = new DisplayList();
+
     final ResourceGroup<byte[]> resources =
         ResourceGroup.of(
           BinaryResource.from("map20.color"),
@@ -50,17 +51,34 @@ public final class ComancheApp extends GenericApp {
 
     resources.listener(new ResourceGroup.SimpleListener<byte[]>() {
       @Override
-      public void onResourceGroupComplete(@Nonnull ResourceGroup<byte[]> resourceGroup, @Nonnull List<byte[]> content) {
-        continueWithResources(content.get(0), content.get(1), content.get(2));
+      public void onResourceGroupComplete(@Nonnull ResourceGroup<byte[]> resourceGroup,
+                                          @Nonnull List<byte[]> content) {
+        displayList.onStageReady(
+            stage -> continueWithResourcesAndStage(stage, content.get(0), content.get(1), content.get(2)));
       }
     });
 
     resources.load();
+
+    rootView(displayList);
   }
 
-  void continueWithResources(final byte[] colorMap,
-                             final byte[] heightMap,
-                             final byte[] paletteMap) {
+  @Override
+  protected void onPause() {
+    super.onPause();
+    displayList.onPause();
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    displayList.onResume();
+  }
+
+  void continueWithResourcesAndStage(final Stage stage,
+                                     final byte[] colorMap,
+                                     final byte[] heightMap,
+                                     final byte[] paletteMap) {
     // We create a dummy TextureData the engine dynamically
     // update while rendering
     TextureData textureData =
@@ -76,59 +94,22 @@ public final class ComancheApp extends GenericApp {
 
     // In order do visualize the texture data, we add it as a
     // child to the stage and scale its size to fit the width/height
-    addChild(new Image(textureData)).scaleToSize(width(), height());
-    addChild(new Stats());
+    stage.
+        addChild(new Image(textureData).scaleToSize(width(), height())).
+        addChild(new Stats());
 
     // Update the screen each frame
-    Events.onEnterFrame.add(new EventListener<EnterFrameEvent>() {
-      @Override
-      public void onEvent(EnterFrameEvent enterFrameEvent) {
-        onEnterFrame();
-      }
-    });
+    stage.globalEvents().onEnterFrame.add(enterFrameEvent -> onEnterFrame());
 
     // Now we just add some listeners for keyboard and pointer input
-    Events.onKeyDown.add(new EventListener<KeyboardEvent>() {
-      @Override
-      public void onEvent(KeyboardEvent keyboardEvent) {
-        onKeyDown(keyboardEvent.keyCode);
-      }
-    });
+    stage.globalEvents().onKeyDown.add(event -> onKeyDown(event.keyCode));
+    stage.globalEvents().onKeyUp.add(event -> onKeyUp(event.keyCode));
+    stage.globalEvents().onPointerDown.add(event -> onPointerDown(event.pos));
+    stage.globalEvents().onPointerMove.add(event -> onPointerMove(event.pos));
+    stage.globalEvents().onPointerUp.add(event -> onPointerUp(event.pos));
 
-    Events.onKeyUp.add(new EventListener<KeyboardEvent>() {
-      @Override
-      public void onEvent(KeyboardEvent keyboardEvent) {
-        onKeyUp(keyboardEvent.keyCode);
-      }
-    });
-
-    Events.onPointerDown.add(new EventListener<PointerEvent>() {
-      @Override
-      public void onEvent(PointerEvent pointerEvent) {
-        onPointerDown(pointerEvent.pos);
-      }
-    });
-
-    Events.onPointerMove.add(new EventListener<PointerEvent>() {
-      @Override
-      public void onEvent(PointerEvent pointerEvent) {
-        onPointerMove(pointerEvent.pos);
-      }
-    });
-
-    Events.onPointerUp.add(new EventListener<PointerEvent>() {
-      @Override
-      public void onEvent(PointerEvent pointerEvent) {
-        onPointerUp(pointerEvent.pos);
-      }
-    });
-  }
-
-  @Override
-  protected void onResize(float width, float height) {
-    if(numChildren() > 0) {
-      getChildAt(0).scaleToSize(width, height);
-    }
+    // Adjust the size of the Image when the Stage is resized
+    stage.globalEvents().onResize.add(event -> onResize(event.stage, event.width, event.height));
   }
 
   private void onEnterFrame() {
@@ -239,5 +220,11 @@ public final class ComancheApp extends GenericApp {
     }
 
     state &= ~STATE_MOVE_FWD;
+  }
+
+  private void onResize(@Nonnull final Stage stage, final float width, final float height) {
+    if(stage.numChildren() > 0) {
+      stage.childAt(0).scaleToSize(width, height);
+    }
   }
 }
