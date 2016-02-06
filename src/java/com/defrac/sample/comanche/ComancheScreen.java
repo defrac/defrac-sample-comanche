@@ -8,13 +8,13 @@ import defrac.display.*;
 import defrac.geom.Point;
 import defrac.resource.BinaryResource;
 import defrac.resource.ResourceGroup;
+import defrac.ui.ContentScreen;
 import defrac.ui.DisplayList;
-import defrac.ui.Screen;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public final class ComancheScreen extends Screen {
+public final class ComancheScreen extends ContentScreen {
   static final int WIDTH = 512;
   static final int HEIGHT = 256;
   static final int DEPTH = 400;
